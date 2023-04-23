@@ -45,6 +45,7 @@ def preprocessData(
 ):
     dataLabelled = addLabel(data, colNameForLabel)
     data_clean = cleanData(dataLabelled,colNameForTrain)
+    data_clean.rename(columns={"close": "Close"},inplace=True)
     # print (dataLabelled)
     return data_clean
 
