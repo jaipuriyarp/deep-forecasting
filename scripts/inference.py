@@ -57,8 +57,16 @@ def predict(
     descaler.min_, descaler.scale_ = scaler.min_[0], scaler.scale_[0]
     predictions_descaled = descale(descaler, predictions)
     labels_descaled = descale(descaler, labels)
+    # print("Predictions:", predictions)
+    # print("True:", labels)
+    #
+    # print("Descaled:")
+    # print("Predictions:", predictions_descaled)
+    # print("True:", labels_descaled)
 
-    return predictions_descaled, labels_descaled
+    # return predictions_descaled, labels_descaled
+    return predictions, labels
+
 
 
 def print_loss_metrics(
@@ -70,6 +78,20 @@ def print_loss_metrics(
 
     return None
 
+def accuracyByClassifying(
+    y_true,
+    y_pred
+):
+    y_pred_classification = [1 if x > 0 else -1 for x in y_pred]
+    assert(len(y_true)==len(y_pred_classification))
+    diff = [y_true[i] - y_pred_classification[i] for i in range(0,len(y_true))]
+    countZeros = 0
+    for x in diff:
+        if x == 0:
+            countZeros = countZeros + 1
+
+    print("Classification Accuracy:", countZeros/len(diff)*100)
+    return y_pred_classification
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

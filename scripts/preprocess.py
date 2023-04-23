@@ -32,16 +32,29 @@ def save_data(
 
 
 def clean_data(
-        df
+        df, sort=False
 ):
     """Sort by date and drop NA values."""
     # sort by date
-    df_clean = df.sort_values(by='Date').reset_index(drop=True)
+    if sort:
+        df_clean = df.sort_values(by='Date').reset_index(drop=True)
+    else:
+        df_clean = df
     # drop NaN
     df_clean = df_clean.dropna()
 
     return df_clean
 
+def drop_features(
+        df
+):
+    drop_feature_name = ['Day_Of_Week', 'Month_Of_Year', 'Quarter_Of_Year',
+                         'High_Low_Pct', 'Open_Close_Pct',
+                         'Date', 'Open', 'Low', 'Adj Close', 'Volume']
+    for x in drop_feature_name:
+        del df[x]
+
+    return df
 
 def create_features(
         df
@@ -99,20 +112,26 @@ def prep_data(
 ):
     print("Starting with data preparation...")
     df_clean = clean_data(df)
-    df_clean = create_features(df_clean)
+    # df_clean = create_features(df_clean)
+    # df_clean = drop_features(df_clean)
+    print(df_clean)
 
     # split into train/test datasets
     train_df, test_df, train_size = split_data(df_clean, train_frac)
 
     # subset data
-    train_df = train_df[['Close', 'Volume', 'High_Low_Pct', 'Open_Close_Pct',
-                         'Day_Of_Week', 'Month_Of_Year', 'Quarter_Of_Year']]
-    test_df = test_df[['Close', 'Volume', 'High_Low_Pct', 'Open_Close_Pct',
-                         'Day_Of_Week', 'Month_Of_Year', 'Quarter_Of_Year']]
-
+    # train_df = train_df[['Close', 'Volume', 'High_Low_Pct', 'Open_Close_Pct',
+    #                      'Day_Of_Week', 'Month_Of_Year', 'Quarter_Of_Year']]
+    # test_df = test_df[['Close', 'Volume', 'High_Low_Pct', 'Open_Close_Pct',
+    #                      'Day_Of_Week', 'Month_Of_Year', 'Quarter_Of_Year']]
+    train_df = train_df[['Close', 'Label']]
+    test_df = test_df[['Close', 'Label']]
     if plot_df:
         save_data(train_df, 'plot_df.csv')
 
+    # saving the labelled data i.e. classification data
+    saveLabelledTrainData = train_df[['Label']]
+    saveLabelledTestData = test_df[['Label']]
     # rescale data
     train_df = rescale_data(train_df)
 
@@ -122,6 +141,10 @@ def prep_data(
         index=test_df.index,
         columns=test_df.columns)
 
+    # replacing the label after scaling since,
+    # we don't want labels to be scaled.
+    test_df[['Label']] = saveLabelledTestData[['Label']]
+    train_df[['Label']] = saveLabelledTrainData[['Label']]
     # save data
     save_data(train_df, 'train.csv')
     save_data(test_df, 'test.csv')
